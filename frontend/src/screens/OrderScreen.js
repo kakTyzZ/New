@@ -8,14 +8,14 @@ import Loader from "../components/Loader";
 import { getOrderDetails, payOrder } from "../actions/orderActions";
 import { ORDER_PAY_RESET } from "../constants/orderConstants";
 
-function OrderScreen({ match, history }) {
+function OrderScreen({ match }) {
   const orderId = match.params.id;
   const dispatch = useDispatch();
 
   const [sdkReady, setSdkReady] = useState(false);
 
-  //const orderPay = useSelector((state) => state.orderPay);
-  //const { loading: loadingPay, success: successPay } = orderPay;
+  const orderPay = useSelector((state) => state.orderPay);
+  const { loading: loadingPay, success: successPay } = orderPay || {};
 
   const orderDetails = useSelector((state) => state.orderDetails);
   const { order, loading, error } = orderDetails;
@@ -41,7 +41,7 @@ function OrderScreen({ match, history }) {
   };
 
   useEffect(() => {
-    if (!order || order._id !== Number(orderId)) {
+    if (!order ||successPay|| order._id !== Number(orderId)) {
       dispatch({ type: ORDER_PAY_RESET });
       dispatch(getOrderDetails(orderId));
     } else if (!order.isPaid) {
@@ -51,7 +51,7 @@ function OrderScreen({ match, history }) {
         setSdkReady(true);
       }
     }
-  }, [dispatch, order, orderId,]);
+  }, [dispatch, order, orderId,successPay]);
 
   const successPaymentHandler = (paymentResult) => {
     dispatch(payOrder(orderId, paymentResult));
@@ -179,7 +179,7 @@ function OrderScreen({ match, history }) {
 
               {!order.isPaid && (
                 <ListGroup.Item>
-                  {/* {loadingPay && <Loader />} */}
+                  {loadingPay && <Loader />}
 
                   {!sdkReady ? (
                     <Loader />
